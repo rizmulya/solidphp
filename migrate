@@ -1,0 +1,46 @@
+<?php
+// this file is just for migrate, if you want to try this example.
+
+$conn = new mysqli('localhost', 'root', 'root');
+
+$sqlCommand = "
+-- Adminer 4.8.1 MySQL 8.0.30 dump
+
+SET NAMES utf8;
+SET time_zone = '+00:00';
+SET foreign_key_checks = 0;
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+
+SET NAMES utf8mb4;
+
+DROP DATABASE IF EXISTS `test`;
+CREATE DATABASE `test` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `test`;
+
+DROP TABLE IF EXISTS `persons`;
+CREATE TABLE `persons` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL,
+  `age` int NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO `persons` (`id`, `name`, `age`) VALUES
+(1,	'john',	11);
+";
+
+
+try {
+    if ($conn->multi_query($sqlCommand)) {
+        do {
+            if ($result = $conn->store_result()) {
+                $result->free();
+            }
+        } while ($conn->more_results() && $conn->next_result());
+        echo "DB migrations successful!\n";
+    } else {
+        throw new Exception("ERROR: " . $conn->error);
+    }
+} catch (Exception $e) {
+    echo $e->getMessage() . "\n";
+}
