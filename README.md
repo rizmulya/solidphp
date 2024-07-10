@@ -12,6 +12,7 @@ SolidPHP is the most `lightweight` and `efficient` PHP Framework with only singl
     - [6. Templating Engine](#6-templating-engine)
     - [7. Flash Message](#7-flash-message)
     - [8. Url Encryption](#8-url-encryption)
+    - [9. React Adaptor](#9-react-adaptor)
     - [9. More](#9-more)
 - [How to Use](#how-to-use)
 - [Credits](#credits)
@@ -271,7 +272,47 @@ $app->post('/person/:id', function ($req, $res) use ($db, $cryptor) {
 });
 ```
 
-### 9. More
+### 9. React adaptor
+Redirect php request to React page
+```php
+// ......
+// place at the end of all routes :
+
+$app->rePath('/.*/', function ($req, $res) {
+    return $res->php(__DIR__ . "/views/react.php");
+});
+
+$app->start();
+// end of code
+```
+
+Vite adaptor
+```php
+use SolidPHP\Vite;
+
+Vite::set([
+    'devServer' => 'http://localhost:5173',
+    'manifestPath' => __DIR__ . '/react/dist/.vite/manifest.json',
+    'viteConfigPath' => __DIR__ . '/react/vite.config.js',
+    'distPath' => '/react/dist/',
+]);
+// 
+```
+
+auto changes src & href when running `npm run build`, and change code structure using `Vite::header()` and `Vite::footer()`, based on `APP_DEBUG`.
+```html
+<head>
+    // ....
+    <title>React App</title>
+    <?php Vite::header(); ?>
+</head>
+<body>
+    <div id="root"></div>
+    <?php Vite::footer(); ?>
+</body>
+```
+
+### 11. More
 -  `route($path)`, return full APP_URL + the given $path
 ```php
 use function SolidPHP\route;
@@ -309,6 +350,16 @@ use SolidPHP\Debug;
 ** Read credits docs for more information.
 
 ** if you want to try this example, you can migrate using `php migrate`.
+
+about react:
+1. development
+    - edit react page? `npm run dev`.
+    - or using `php -S localhost:8000`, comment `base` variable, define app_debug to 1, but if want to edit react page recomended to using npm.
+2. production
+    - add `base` variabel at `vite.config.js`, example: `base: '/react/dist'`.
+    - `define('APP_DEBUG', 0);` at `index.php`.
+    - run `npm run build` every changes made to react.
+
 
 ## Credits
 

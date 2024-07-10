@@ -13,6 +13,104 @@ namespace SolidPHP;
 use Exception;
 
 /**
+ * React Vite Helper
+ */
+class Vite
+{
+    private static $devServer = 'http://localhost:5173';
+    private static $manifestPath = __DIR__ . '/react/dist/.vite/manifest.json';
+    private static $viteConfigPath = __DIR__ . '/react/vite.config.js';
+    private static $distPath = '/react/dist/';
+
+    /**
+     * @param array $config['devServer'] 
+     * @param array $config['manifestPath']
+     * @param array $config['viteConfigPath']
+     * @param array $config['distPath']
+     */
+    public static function set($config = [])
+    {
+        self::$devServer = $config['devServer'] ?? self::$devServer;
+        self::$manifestPath = $config['manifestPath'] ?? self::$manifestPath;
+        self::$viteConfigPath = $config['viteConfigPath'] ?? self::$viteConfigPath;
+        self::$distPath = $config['distPath'] ?? self::$distPath;
+    }
+
+    /**
+     * Auto modify vite.config.js based on APP_DEBUG
+     */
+    public static function autoConfig()
+    {
+        if (!file_exists(self::$viteConfigPath)) {
+            echo "File not found: " . self::$viteConfigPath;
+            return;
+        }
+
+        $content = file_get_contents(self::$viteConfigPath);
+
+        if (APP_DEBUG) {
+            $content = preg_replace('/^(?!\/\/)(\s*base:\s*\'[^\']*\',\s*)$/m', '// $1', $content);
+        } else {
+            $content = preg_replace('/^\s*\/\/\s*(base:\s*\'[^\']*\',\s*)$/m', '$1', $content);
+        }
+
+        file_put_contents(self::$viteConfigPath, $content);
+    }
+
+    /**
+     * React vite header
+     */
+    public static function header()
+    {
+        if (APP_DEBUG) {
+            echo '
+            <link rel="icon" type="image/svg+xml" href="' . self::$devServer . '/vite.svg" />
+            <script type="module">
+                import RefreshRuntime from "' . self::$devServer . '/@react-refresh"
+                RefreshRuntime.injectIntoGlobalHook(window)
+                window.$RefreshReg$ = () => {}
+                window.$RefreshSig$ = () => (type) => type
+                window.__vite_plugin_react_preamble_installed__ = true
+            </script>
+            <script type="module" src="' . self::$devServer . '/@vite/client"></script>';
+        }
+        if (!APP_DEBUG) {
+            echo '<script type="module" crossorigin src="' . route(self::$distPath . '/' . self::asset('index.html')) . '"></script>
+            <link rel="stylesheet" crossorigin href="' . route(self::$distPath . '/' . self::asset('index.html', 'css')[0]) . '" />';
+        }
+    }
+
+    /**
+     * React vite footer script
+     */
+    public static function footer($src = 'src/main.jsx')
+    {
+        if (APP_DEBUG) {
+            echo '<script type="module" src="' . self::asset($src) . '"></script>';
+        }
+    }
+
+    /**
+     * Get vite asset
+     */
+    private static function asset($asset, $type = 'file')
+    {
+        if (APP_DEBUG) {
+            if ($type === 'css') {
+                return [];
+            }
+            return self::$devServer . "/$asset";
+        } else {
+            $manifest = json_decode(file_get_contents(self::$manifestPath), true);
+            if (isset($manifest[$asset])) {
+                return $manifest[$asset][$type];
+            }
+            return null;
+        }
+    }
+}
+
+/**
  * Encryption for url safety
  */
 class UrlCryptor
@@ -351,14 +449,14 @@ class Router
         $this->method = $_SERVER['REQUEST_METHOD'] ?? null;
         $this->request["method"] = $this->method;
         $this->request["header"] = $this->getHTTPHeaders();
-        $this->currentPath = $_SERVER['PATH_INFO'] ?? str_replace(parse_url(APP_URL, PHP_URL_PATH), '', $_SERVER["REQUEST_URI"]);
+        $this->currentPath = $_SERVER['PATH_INFO'] ?? str_replace(parse_url(APP_URL, PHP_URL_PATH) ?: '', '', $_SERVER["REQUEST_URI"]);
         $this->request["body"] = $_POST ?? [];
         $this->request["raw"] = file_get_contents('php://input');
         $this->request["params"] = $_GET ?? [];
         $this->request["files"] = $_FILES ?? [];
         $this->request["cookies"] = $_COOKIE ?? [];
         $this->response = new Response();
-        $this->routes = ['GET' => [], 'POST' => [], 'PUT' => [], 'DELETE' => [], 'PATCH' => [], 'ANY' => []];
+        $this->routes = ['GET' => [], 'POST' => [], 'PUT' => [], 'DELETE' => [], 'PATCH' => [], 'ANY' => [], 'RE' => []];
         if ($this->method === 'POST' && isset($_POST['_method'])) {
             $this->method = strtoupper($_POST['_method']);
             $this->request["method"] = $this->method;
@@ -411,14 +509,23 @@ class Router
         $this->errorFunction = $function;
     }
 
+    public function rePath($regex, ...$callback)
+    {
+        $this->routes['RE'][$regex] = $callback;
+    }
+
     private function getCallback($method)
     {
         if (!isset($this->routes[$method])) return null;
-        foreach ($this->routes[$method] as $name => $callbacks) {
-            if (preg_match($name, $this->currentPath, $matches) || preg_match($name, $this->currentPath . "/", $matches)) {
-                $this->request["params"] = array_intersect_key($matches, array_flip(array_filter(array_keys($matches), 'is_string')));
-                return $callbacks;
+        foreach ([$method, 'RE'] as $method) {
+            if (!isset($this->routes[$method])) continue;
+            foreach ($this->routes[$method] as $pattern => $callbacks) {
+                if (preg_match($pattern, $this->currentPath, $matches)) {
+                    $this->request["params"] = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+                    return $callbacks;
+                }
             }
+            if ($method === 'ANY') break;
         }
         return null;
     }
@@ -470,27 +577,11 @@ class Response
      */
     public function json($data, $status = null)
     {
-        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Type: application/json');
         if ($status !== null) {
             http_response_code($status);
         }
         return print(json_encode($data));
-    }
-
-    /**
-     * @return void PHP page with Templating Engine
-     */
-    public function phpView($page, $data = [])
-    {
-        Section::render($page, $data);
-    }
-
-    /**
-     * @return void header location to the given $path
-     */
-    public function redirect($path)
-    {
-        return header('Location: ' . $path);
     }
 
     /**
@@ -509,25 +600,33 @@ class Response
     }
 
     /**
-     * Send response as HTML
-     *
-     * @param  string $filepath Path to the HTML file to be sent
-     * @param  int    $status   HTTP code (optional)
-     * @return bool             Indication if sending the HTML file was successful
+     * @return void header location to the given $path
      */
-    public function html($filepath, $status = null)
+    public function redirect($path)
     {
-        if (!file_exists($filepath)) {
-            throw new Exception('HTML file not found: ' . $filepath);
-        }
+        return header('Location: ' . $path);
+    }
 
-        header('Content-Type: text/html; charset=utf-8');
+    /**
+     * @return void PHP page with Templating Engine
+     */
+    public function view($page, $data = [])
+    {
+        Section::render($page, $data);
+    }
+
+    /**
+     * Return PHP single file
+     */
+    public function php($file, $status = null)
+    {
         if ($status !== null) {
             http_response_code($status);
         }
-
-        readfile($filepath);
-        return true;
+        ob_start();
+        include $file;
+        $content = ob_get_clean();
+        return print($content);
     }
 
     // /**
@@ -539,10 +638,6 @@ class Response
     //  */
     // public function file($filepath, $status = null)
     // {
-    //     if (!file_exists($filepath)) {
-    //         throw new Exception('File not found: ' . $filepath);
-    //     }
-
     //     $mime_type = mime_content_type($filepath);
     //     header('Content-Type: ' . $mime_type);
     //     header('Content-Disposition: inline; filename="' . basename($filepath) . '"');

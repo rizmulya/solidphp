@@ -1,7 +1,9 @@
 <?php
 // index.php and views folder are just for example how to use
-
+// required define
 define('APP_START', microtime(true));
+define('APP_URL', 'http://localhost:8000');
+define('APP_DEBUG', 1);
 
 require 'SolidPHP.php';
 
@@ -12,8 +14,8 @@ use SolidPHP\JWT;
 use SolidPHP\Flash;
 use function SolidPHP\route;
 use SolidPHP\UrlCryptor;
+use SolidPHP\Vite;
 
-define('APP_URL', 'http://localhost/solidphp'); // required for $app
 $app = new Router();
 
 $db = new Medoo([
@@ -26,6 +28,13 @@ $db = new Medoo([
 
 $cryptor = new UrlCryptor('your-key-here-must-be-32-bytes--');
 JWT::setSecretKey('12345678');
+
+Vite::set([
+    'devServer' => 'http://localhost:5173',
+    'manifestPath' => __DIR__ . '/react/dist/.vite/manifest.json',
+    'viteConfigPath' => __DIR__ . '/react/vite.config.js',
+    'distPath' => '/react/dist/',
+]);
 
 
 /**
@@ -48,11 +57,12 @@ function useJwtAuth($req, $res, $next)
  * Routes
  */
 $app->get('/', function ($req, $res) {
-    return $res->phpView(__DIR__ . '/views/pages/home.php');
+    // return $res->php(__DIR__ . "/views/react.php");
+    return $res->view(__DIR__ . '/views/pages/home.php');
 });
 
 $app->get('/login', function ($req, $res) {
-    return $res->phpView(__DIR__ . '/views/pages/login.php');
+    return $res->view(__DIR__ . '/views/pages/login.php');
 });
 
 $app->post('/login', function ($req, $res) {
@@ -75,7 +85,7 @@ $app->get('/person', 'useJwtAuth', function ($req, $res) use ($db, $cryptor) {
 
     $persons = $cryptor->encryptField($data, 'id');
 
-    return $res->phpView(__DIR__ . '/views/pages/person.php', ['persons' => $persons]);
+    return $res->view(__DIR__ . '/views/pages/person.php', ['persons' => $persons]);
 });
 
 $app->post('/person', function ($req, $res) use ($db) {
@@ -130,9 +140,12 @@ $app->delete('/person/:id', function ($req, $res) use ($db, $cryptor) {
     return $res->redirect($req["header"]["HTTP_REFERER"] ?? route('/person'));
 });
 
+$app->rePath('/.*/', function ($req, $res) {
+    return $res->php(__DIR__ . "/views/react.php");
+});
+
 $app->error(function (Exception $e, $res) {
     return $res->send('path not found', 404);
 });
-
 
 $app->start();

@@ -20,6 +20,7 @@ use SolidPHP\Debug;
             <ul>
                 <li><a href="<?= route('/') ?>">Home</a></li>
                 <li><a href="<?= route('/person') ?>">Person</a></li>
+                <li><a href="<?= route('/contact') ?>">Contact</a></li>
             </ul>
         </nav>
 
