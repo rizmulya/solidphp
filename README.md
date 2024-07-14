@@ -1,6 +1,6 @@
 # SolidPHP
 
-SolidPHP is the most `lightweight` and `efficient` PHP Framework with only single file.
+SolidPHP is the most `lightweight` and `efficient` PHP Micro Framework.
 
 #### table of content
 - [Docs & Features](#docs--features)
@@ -376,8 +376,6 @@ use SolidPHP\Debug;
 1. Copy `SolidPHP.php` and `.htaccess` to your project.
 
 ** See index.php and views folder for example how to use. <br>
-** Read credits docs for more information.
-
 ** if you want to try this example, you can migrate using `php migrate`.
 
 about react:

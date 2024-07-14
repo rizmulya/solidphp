@@ -2,7 +2,7 @@
 
 /**
  * SolidPHP
- * is The Most Lightweight and Efficient PHP Framework
+ * is The Most Lightweight and Efficient PHP Micro Framework
  * https://github.com/rizmulya/solidphp
  */
 
