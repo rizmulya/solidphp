@@ -390,4 +390,5 @@ about react:
 
 ## Credits
 
-- [PHPRouter by Mohd Rashid (Modified)](https://github.com/mohdrashid/PHPRouter)
+- [PHPRouter (Router & Response class) by Mohd Rashid (modified)](https://github.com/mohdrashid/PHPRouter)
+- [SolidPHP by rizmulya](https://github.com/rizmulya/solidphp)
