@@ -31,10 +31,11 @@ $db->table('persons', [
     'age' => 'i'
 ]);
 
-
+// app keys
 $cryptor = new UrlCryptor('your-key-here-must-be-32-bytes--');
 JWT::setSecretKey('12345678');
 
+// React Vite adaptor
 Vite::set([
     'devServer' => 'http://localhost:5173',
     'manifestPath' => __DIR__ . '/react/dist/.vite/manifest.json',

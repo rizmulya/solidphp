@@ -178,7 +178,7 @@ class DBMysql
 
 
 /**
- * React Vite Helper
+ * React Vite Adaptor
  */
 class Vite
 {
@@ -204,23 +204,23 @@ class Vite
     /**
      * Auto modify vite.config.js based on APP_DEBUG
      */
-    public static function autoConfig()
-    {
-        if (!file_exists(self::$viteConfigPath)) {
-            echo "File not found: " . self::$viteConfigPath;
-            return;
-        }
+    // public static function autoConfig()
+    // {
+    //     if (!file_exists(self::$viteConfigPath)) {
+    //         echo "File not found: " . self::$viteConfigPath;
+    //         return;
+    //     }
 
-        $content = file_get_contents(self::$viteConfigPath);
+    //     $content = file_get_contents(self::$viteConfigPath);
 
-        if (APP_DEBUG) {
-            $content = preg_replace('/^(?!\/\/)(\s*base:\s*\'[^\']*\',\s*)$/m', '// $1', $content);
-        } else {
-            $content = preg_replace('/^\s*\/\/\s*(base:\s*\'[^\']*\',\s*)$/m', '$1', $content);
-        }
+    //     if (APP_DEBUG) {
+    //         $content = preg_replace('/^(?!\/\/)(\s*base:\s*\'[^\']*\',\s*)$/m', '// $1', $content);
+    //     } else {
+    //         $content = preg_replace('/^\s*\/\/\s*(base:\s*\'[^\']*\',\s*)$/m', '$1', $content);
+    //     }
 
-        file_put_contents(self::$viteConfigPath, $content);
-    }
+    //     file_put_contents(self::$viteConfigPath, $content);
+    // }
 
     /**
      * React vite header
