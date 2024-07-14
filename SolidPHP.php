@@ -24,8 +24,8 @@ use mysqli;
  * @method mixed getStmt()                              Original mysqli $stmt
  * @method mixed get_result()                           Original mysqli get_result()
  * @method mixed table($tableName, array $fields)       Define the table for efficiency
- * @method string fields($tableName)                    Get fields name based on defined table.
- * @method string setClause($tableName)                 Generate SET Clause based on defined table.
+ * @method string fields($tableName, $exclude = [])     Get fields name based on defined table.
+ * @method string setClause($tableName, $exclude = [])  Generate SET Clause based on defined table.
  */
 class DBMysql
 {
@@ -154,25 +154,33 @@ class DBMysql
     /**
      * Get fields name based on defined table.
      * @param string $tableName
+     * @param array $exclude
      * @return string imploded fields 'a, b, c'
      */
-    public function fields($tableName)
+    public function fields($tableName, $exclude = [])
     {
-        return isset($this->fields[$tableName]) ? implode(", ", array_keys($this->fields[$tableName])) : '';
+        if (!isset($this->fields[$tableName])) return '';
+        $fields = self::filterFields($this->fields[$tableName], $exclude);
+        return implode(", ", array_keys($fields));
     }
 
     /**
      * Generate SET Clause based on defined table.
      *
      * @param string $tableName
+     * @param array $exclude
      * @return string SET Clause 'a = ?, b = ?'
      */
-    public function setClause($tableName)
+    public function setClause($tableName, $exclude = [])
     {
         if (!isset($this->fields[$tableName])) return '';
+        $fields = self::filterFields($this->fields[$tableName], $exclude);
+        return implode(' = ?, ', array_keys($fields)) . ' = ?';
+    }
 
-        $setClause = implode(' = ?, ', array_keys($this->fields[$tableName])) . ' = ?';
-        return $setClause;
+    private static function filterFields($fields, $exclude)
+    {
+        return array_diff_key($fields, array_flip($exclude));
     }
 }
 
@@ -315,6 +323,25 @@ class UrlCryptor
         }
         return $data;
     }
+
+    /**
+     * Add an encrypted field to the given array data
+     * @param array $data The data to be processed
+     * @param string $sourceField The field to be encrypted
+     * @param string $newField The new field to store the encrypted value
+     * @return array The processed data with the new encrypted field
+     */
+    public function addEncryptedField(array $data, $sourceField, $newField)
+    {
+        if (isset($data[0]) && is_array($data[0])) {
+            foreach ($data as &$row) {
+                $row[$newField] = $this->encrypt($row[$sourceField]);
+            }
+        } else {
+            $data[$newField] = $this->encrypt($data[$sourceField]);
+        }
+        return $data;
+    }
 }
 
 
@@ -323,7 +350,7 @@ class UrlCryptor
  */
 class JWT
 {
-    private static $cookieName = 'jwtToken';
+    private static $cookieName = 'webToken';
     private static $secretKey;
     private static $expiry;
 
@@ -415,6 +442,14 @@ class JWT
         }
 
         return $_COOKIE[self::$cookieName] ?? '';
+    }
+
+    /**
+     * Get verified user
+     */
+    public static function getUser()
+    {
+        return self::decode(self::getToken());
     }
 
     private static function base64UrlEncode($input)
@@ -938,7 +973,21 @@ class Section
         ob_start();
         extract($data);
         include $page;
-        ob_get_clean();
-        include self::$layout;
+        $pageContent = ob_get_clean();
+
+        if (self::$layout) {
+            include self::$layout;
+        } else {
+            echo $pageContent;
+        }
+    }
+
+    /**
+     * Include a php file with the given data
+     */
+    public static function include($file, $data = [])
+    {
+        extract($data);
+        include $file;
     }
 }

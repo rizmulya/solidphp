@@ -148,4 +148,7 @@ $app->error(function (Exception $e, $res) {
     return $res->send('path not found', 404);
 });
 
+
 $app->start();
+
+$db->shutdown();
