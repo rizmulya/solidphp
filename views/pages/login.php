@@ -1,7 +1,7 @@
 <?php
 
 use SolidPHP\Section;
-use function SolidPHP\route;
+use SolidPHP\Route;
 ?>
 
 <?php Section::extends(__DIR__ . '/../layout.php'); ?>
@@ -27,7 +27,7 @@ use function SolidPHP\route;
         const password = formData.get('password');
 
         try {
-            const response = await fetch(`<?= route('/login') ?>`, {
+            const response = await fetch(`<?= Route::is('/login') ?>`, {
                 method: 'POST',
                 body: formData,
             });
@@ -38,7 +38,7 @@ use function SolidPHP\route;
 
             const data = await response.json();
             if (data.status == 'success') {
-                location.href = '<?= route('/person') ?>';
+                location.href = '<?= Route::is('/person') ?>';
             };
         } catch (err) {
             console.error(err.message);

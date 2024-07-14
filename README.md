@@ -392,7 +392,7 @@ use SolidPHP\Debug;
 about react:
 1. development
     - `php -S localhost:8000`, comment `base` variable, define app_debug to 1
-    - `npm run dev` and visit react page from `localhost:5173` not from `8000`.
+    - `npm run dev` and visit page from react server `localhost:5173` instead of php server `localhost:8000`.
 2. production
     - add `base` variabel at `vite.config.js`.
     - `define('APP_DEBUG', 0);` at `index.php`.

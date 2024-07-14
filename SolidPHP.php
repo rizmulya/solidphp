@@ -240,8 +240,8 @@ class Vite
             <script type="module" src="' . self::$devServer . '/@vite/client"></script>';
         }
         if (!APP_DEBUG) {
-            echo '<script type="module" crossorigin src="' . Route::is(self::$distPath . '/' . self::asset('index.html')) . '"></script>
-            <link rel="stylesheet" crossorigin href="' . Route::is(self::$distPath . '/' . self::asset('index.html', 'css')[0]) . '" />';
+            echo '<script type="module" crossorigin src="' . Route::is(rtrim(self::$distPath, '/') . '/' . self::asset('index.html')) . '"></script>
+            <link rel="stylesheet" crossorigin href="' . Route::is(rtrim(self::$distPath, '/') . '/' . self::asset('index.html', 'css')[0]) . '" />';
         }
     }
 
