@@ -7,5 +7,5 @@ export default defineConfig({
   build: {
     manifest: true,
   },
-  base: '/react/dist',
+  // base: '/react/dist',
 })

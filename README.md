@@ -7,13 +7,13 @@ SolidPHP is the most `lightweight` and `efficient` PHP Framework with only singl
     - [1. API Handler](#1-api-handler)
     - [2. Middleware](#2-middleware)
     - [3. JWT Auth](#3-jwt-auth)
-    - [4. Database Framework](#4-database-framework)
+    - [4. Database Helpers](#4-database-helpers)
     - [5. CSRF Protection](#5-csrf-protection)
     - [6. Templating Engine](#6-templating-engine)
     - [7. Flash Message](#7-flash-message)
     - [8. Url Encryption](#8-url-encryption)
     - [9. React Adaptor](#9-react-adaptor)
-    - [9. More](#9-more)
+    - [10. More](#9-more)
 - [How to Use](#how-to-use)
 - [Credits](#credits)
 
@@ -111,35 +111,64 @@ $app->get('/logout', function ($req, $res) {
 });
 ```
 
-### 4. Database Framework
+### 4. Database Helpers
+
 
 ```php
-use SolidPHP\Medoo;
+/**
+ * Perform simplified, secure, original MySQLi database operations with defined fields and data types.
+ * 
+ * @method mixed query($query) — Original mysqli query()
+ * @method mixed prepare($query) — Original mysqli prepare()
+ * @method mixed bind_param($tableName, ...$params) — Modied mysqli bind_param()
+ * @method mixed execute() — Original mysqli execute()
+ * @method mixed close() — Original mysqli $stmt close()
+ * @method mixed shutdown() — Original mysqli close() connection
+ * @method mixed getStmt() — Original mysqli $stmt
+ * @method mixed get_result() — Original mysqli get_result()
+ * @method mixed table($tableName, array $fields) — Define the table for efficiency
+ * @method string fields($tableName) — Get fields name based on defined table.
+ * @method string setClause($tableName) — Generate SET Clause based on defined table.
+ */
+use SolidPHP\DBMysql;
 
 // init
-$database = new Medoo([
-    'type' => 'mysql',
+$db = new DBMysql([
     'host' => 'localhost',
-    'database' => 'name',
     'username' => 'your_username',
-    'password' => 'your_password'
+    'password' => 'your_password',
+    'database' => 'your_database',
 ]);
+
+/**
+ * Define the table for efficiency and bind_param() purposes.
+ * @param string $tableName
+ * @param array $fields['field1' => 'type1']
+ * - type 'i' is used for an integer (123)
+ * - type 'd' is used for a double (3.14)
+ * - type 's' is used for a string ('sample')
+ * - type 'b' is used for binary data (file_get_content())
+ */
+$db->table('persons', [
+    'name' => 's',
+    'age' => 'i'
+]);
+
 // use
-$database->insert('account', [
-    'user_name' => 'foo',
-    'email' => 'foo@bar.com'
-]);
+// ({$db->fields('persons')}) => use defined table fields
+// bind_param('persons'       => use defined data type
+ $db->prepare("INSERT INTO persons ({$db->fields('persons')}) VALUES (?, ?)")
+    ->bind_param('persons', $req["body"]["name"], $req["body"]["age"]) 
+    ->execute();
 
-$data = $database->select('account', [
-    'user_name',
-    'email'
-], [
-    'user_id' => 50
-]);
+// use
+// {$db->setClause('persons')}  => get set clause from defined table fields
+// ->bind_param('sii'           => use raw data type
+$db->prepare("UPDATE persons SET {$db->setClause('persons')} WHERE id = ?")
+    ->bind_param('sii', $req["body"]["name"], $req["body"]["age"], $cryptor->decrypt($req["params"]["id"]))
+    ->execute();
 
-echo json_encode($data);
 ```
-[read more about database framework](https://github.com/catfan/Medoo)
 
 ### 5. CSRF Protection
 
@@ -312,7 +341,7 @@ auto changes src & href when running `npm run build`, and change code structure 
 </body>
 ```
 
-### 11. More
+### 10. More
 -  `route($path)`, return full APP_URL + the given $path
 ```php
 use function SolidPHP\route;
@@ -353,10 +382,10 @@ use SolidPHP\Debug;
 
 about react:
 1. development
-    - edit react page? `npm run dev`.
-    - or using `php -S localhost:8000`, comment `base` variable, define app_debug to 1, but if want to edit react page recomended to using npm.
+    - `php -S localhost:8000`, comment `base` variable, define app_debug to 1
+    - `npm run dev` and visit react page from `localhost:5173` not from `8000`.
 2. production
-    - add `base` variabel at `vite.config.js`, example: `base: '/react/dist'`.
+    - add `base` variabel at `vite.config.js`.
     - `define('APP_DEBUG', 0);` at `index.php`.
     - run `npm run build` every changes made to react.
 
@@ -364,4 +393,3 @@ about react:
 ## Credits
 
 - [PHPRouter by Mohd Rashid (Modified)](https://github.com/mohdrashid/PHPRouter)
-- [Medoo by Angel Lai](https://github.com/catfan/Medoo)

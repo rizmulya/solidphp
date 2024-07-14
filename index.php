@@ -8,23 +8,29 @@ define('APP_DEBUG', 1);
 require 'SolidPHP.php';
 
 use SolidPHP\Router;
-use SolidPHP\Medoo;
 use SolidPHP\CSRF;
 use SolidPHP\JWT;
 use SolidPHP\Flash;
 use function SolidPHP\route;
 use SolidPHP\UrlCryptor;
 use SolidPHP\Vite;
+use SolidPHP\DBMysql;
 
 $app = new Router();
 
-$db = new Medoo([
-    'type' => 'mysql',
+// db
+$db = new DBMysql([
     'host' => 'localhost',
-    'database' => 'test',
     'username' => 'root',
-    'password' => 'root'
+    'password' => 'root',
+    'database' => 'test',
 ]);
+// define table
+$db->table('persons', [
+    'name' => 's',
+    'age' => 'i'
+]);
+
 
 $cryptor = new UrlCryptor('your-key-here-must-be-32-bytes--');
 JWT::setSecretKey('12345678');
@@ -81,7 +87,7 @@ $app->get('/logout', function ($req, $res) {
 });
 
 $app->get('/person', 'useJwtAuth', function ($req, $res) use ($db, $cryptor) {
-    $data = $db->select('persons', '*');
+    $data = $db->query('SELECT * FROM persons')->fetch_all(MYSQLI_ASSOC);
 
     $persons = $cryptor->encryptField($data, 'id');
 
@@ -91,11 +97,9 @@ $app->get('/person', 'useJwtAuth', function ($req, $res) use ($db, $cryptor) {
 $app->post('/person', function ($req, $res) use ($db) {
     CSRF::verify($req);
 
-    $data = [
-        'name' => $req["body"]["name"],
-        'age' => $req["body"]["age"],
-    ];
-    $db->insert('persons', $data);
+    $db->prepare("INSERT INTO persons ({$db->fields('persons')}) VALUES (?, ?)")
+        ->bind_param('persons', $req["body"]["name"], $req["body"]["age"])
+        ->execute();
 
     Flash::set('message', 'added!');
     return $res->redirect($req["header"]["HTTP_REFERER"] ?? route('/person'));
@@ -104,12 +108,9 @@ $app->post('/person', function ($req, $res) use ($db) {
 $app->put('/person/:id', function ($req, $res) use ($db, $cryptor) {
     CSRF::verify($req);
 
-    $db->update('persons', [
-        'name' => $req["body"]["name"],
-        'age' => $req["body"]["age"],
-    ], [
-        'id' => $cryptor->decrypt($req["params"]["id"])
-    ]);
+    $db->prepare("UPDATE persons SET {$db->setClause('persons')} WHERE id = ?")
+        ->bind_param('sii', $req["body"]["name"], $req["body"]["age"], $cryptor->decrypt($req["params"]["id"]))
+        ->execute();
 
     Flash::set('message', 'updated!');
     return $res->redirect($req["header"]["HTTP_REFERER"] ?? route('/person'));
@@ -118,13 +119,11 @@ $app->put('/person/:id', function ($req, $res) use ($db, $cryptor) {
 $app->post('/person/:id', function ($req, $res) use ($db, $cryptor) {
     CSRF::verify($req);
 
-    $data = $db->get('persons', [
-        'id',
-        'name',
-        'age'
-    ], [
-        'id' => $cryptor->decrypt($req["params"]["id"])
-    ]);
+    $data = $db->prepare("SELECT * FROM persons WHERE id = ?")
+        ->bind_param('i', $cryptor->decrypt($req["params"]["id"]))
+        ->execute()
+        ->get_result()
+        ->fetch_assoc();
 
     return $res->json($data, 200);
 });
@@ -132,9 +131,9 @@ $app->post('/person/:id', function ($req, $res) use ($db, $cryptor) {
 $app->delete('/person/:id', function ($req, $res) use ($db, $cryptor) {
     CSRF::verify($req);
 
-    $db->delete('persons', [
-        'id' => $cryptor->decrypt($req["params"]["id"])
-    ]);
+    $db->prepare("DELETE FROM persons WHERE id = ?")
+        ->bind_param('i', $cryptor->decrypt($req["params"]["id"]))
+        ->execute();
 
     Flash::set('message', 'deleted!');
     return $res->redirect($req["header"]["HTTP_REFERER"] ?? route('/person'));
