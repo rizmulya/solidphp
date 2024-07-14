@@ -13,7 +13,7 @@ SolidPHP is the most `lightweight` and `efficient` PHP Framework with only singl
     - [7. Flash Message](#7-flash-message)
     - [8. Url Encryption](#8-url-encryption)
     - [9. React Adaptor](#9-react-adaptor)
-    - [10. More](#9-more)
+    - [10. More](#10-more)
 - [How to Use](#how-to-use)
 - [Credits](#credits)
 
