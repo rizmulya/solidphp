@@ -11,7 +11,7 @@ use SolidPHP\Router;
 use SolidPHP\CSRF;
 use SolidPHP\JWT;
 use SolidPHP\Flash;
-use function SolidPHP\route;
+use SolidPHP\Route;
 use SolidPHP\UrlCryptor;
 use SolidPHP\Vite;
 use SolidPHP\DBMysql;
@@ -53,7 +53,7 @@ function useJwtAuth($req, $res, $next)
 
     if (!$isValid) {
         $res->status(401);
-        return $res->redirect(route('/login'));
+        return $res->redirect(Route::is('/login'));
     };
 
     $next();
@@ -83,7 +83,7 @@ $app->post('/login', function ($req, $res) {
 
 $app->get('/logout', function ($req, $res) {
     JWT::deleteCookie();
-    return $res->redirect(route('/login'));
+    return $res->redirect(Route::is('/login'));
 });
 
 $app->get('/person', 'useJwtAuth', function ($req, $res) use ($db, $cryptor) {
@@ -102,7 +102,7 @@ $app->post('/person', function ($req, $res) use ($db) {
         ->execute();
 
     Flash::set('message', 'added!');
-    return $res->redirect($req["header"]["HTTP_REFERER"] ?? route('/person'));
+    return $res->redirect($req["header"]["HTTP_REFERER"] ?? Route::is('/person'));
 });
 
 $app->put('/person/:id', function ($req, $res) use ($db, $cryptor) {
@@ -113,7 +113,7 @@ $app->put('/person/:id', function ($req, $res) use ($db, $cryptor) {
         ->execute();
 
     Flash::set('message', 'updated!');
-    return $res->redirect($req["header"]["HTTP_REFERER"] ?? route('/person'));
+    return $res->redirect($req["header"]["HTTP_REFERER"] ?? Route::is('/person'));
 });
 
 $app->post('/person/:id', function ($req, $res) use ($db, $cryptor) {
@@ -136,7 +136,7 @@ $app->delete('/person/:id', function ($req, $res) use ($db, $cryptor) {
         ->execute();
 
     Flash::set('message', 'deleted!');
-    return $res->redirect($req["header"]["HTTP_REFERER"] ?? route('/person'));
+    return $res->redirect($req["header"]["HTTP_REFERER"] ?? Route::is('/person'));
 });
 
 $app->rePath('/.*/', function ($req, $res) {

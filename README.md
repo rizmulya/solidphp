@@ -342,13 +342,24 @@ auto changes src & href when running `npm run build`, and change code structure 
 ```
 
 ### 10. More
--  `route($path)`, return full APP_URL + the given $path
+-  `Route` helpers
 ```php
-use function SolidPHP\route;
+/**
+ * Route Helper
+ * 
+ * @method string is($param)        Build a full URL from a given parameter.
+ * @method string current()         Get the full current URL.
+ * @method bool equals($url)        Check if the current URL equals the given parameter.
+ * @method bool contains($string)   Check if the current URL contains the given parameter.
+ */
+use SolidPHP\Route;
 
-<form action="<?= route('/person')?>" ></form> // example.com/person
-<link rel="stylesheet" href="<?= route('/public/css/style.css') ?>" /> // example.com/public/css/style.css
+<form action="<?= Route::is('/person')?>" ></form> // example.com/person
+<link rel="stylesheet" href="<?= Route::is('/public/css/style.css') ?>" /> // example.com/public/css/style.css
+
+// and more .....
 ```
+
 - `Filter::out()`, xss protection
 ```php
 use SolidPHP\Filter;

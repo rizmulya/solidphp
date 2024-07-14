@@ -1,7 +1,7 @@
 <?php
 
 use SolidPHP\Section;
-use function SolidPHP\route;
+use SolidPHP\Route;
 use SolidPHP\CSRF;
 use SolidPHP\Flash;
 use SolidPHP\Filter;
@@ -21,7 +21,7 @@ use SolidPHP\Filter;
     <?php endif; ?>
 </p>
 <div id="form">
-    <form action="<?= route('/person') ?>" method="POST">
+    <form action="<?= Route::is('/person') ?>" method="POST">
         <?= CSRF::token() ?>
         <input type="text" placeholder="name" name="name">
         <input type="text" placeholder="age" name="age">
@@ -51,7 +51,7 @@ use SolidPHP\Filter;
                     <button onclick="handleEdit('<?= $person['id'] ?>')">
                         Edit
                     </button>
-                    <form action="<?= route('/person/') . $person['id'] ?>" method="post">
+                    <form action="<?= Route::is('/person/') . $person['id'] ?>" method="post">
                         <!-- method="DELETE" -->
                         <?= CSRF::token("DELETE")  ?>
                         <button type="submit">Delete</button>
@@ -68,7 +68,7 @@ use SolidPHP\Filter;
 <script>
     const handleEdit = async (id) => {
         // const id = e.target.dataset.id;
-        const res = await fetch(`<?= route('/person/') ?>${id}`, {
+        const res = await fetch(`<?= Route::is('/person/') ?>${id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ use SolidPHP\Filter;
         const data = await res.json();
 
         const html = `
-        <form action="<?= route('/person/') ?>${id}" method="POST" style="display: inline;">
+        <form action="<?= Route::is('/person/') ?>${id}" method="POST" style="display: inline;">
             <!-- method="PUT" -->
             <?= CSRF::token("PUT") ?>
             <input type="text" placeholder="name" name="name" value="${data.name}">
@@ -96,7 +96,7 @@ use SolidPHP\Filter;
 
     const handleLogout = (() => {
         document.getElementById('logout').addEventListener('click', () => {
-            location.href = '<?= route('logout') ?>';
+            location.href = '<?= Route::is('logout') ?>';
         })
     })();
 </script>

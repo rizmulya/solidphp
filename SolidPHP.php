@@ -240,8 +240,8 @@ class Vite
             <script type="module" src="' . self::$devServer . '/@vite/client"></script>';
         }
         if (!APP_DEBUG) {
-            echo '<script type="module" crossorigin src="' . route(self::$distPath . '/' . self::asset('index.html')) . '"></script>
-            <link rel="stylesheet" crossorigin href="' . route(self::$distPath . '/' . self::asset('index.html', 'css')[0]) . '" />';
+            echo '<script type="module" crossorigin src="' . Route::is(self::$distPath . '/' . self::asset('index.html')) . '"></script>
+            <link rel="stylesheet" crossorigin href="' . Route::is(self::$distPath . '/' . self::asset('index.html', 'css')[0]) . '" />';
         }
     }
 
@@ -587,11 +587,58 @@ class CSRF
 
 
 /**
- *  @return string full APP_URL + the given $path
+ * Route Helper
+ * @method string is($param)        Build a full URL from a given parameter.
+ * @method string current()         Get the full current URL.
+ * @method bool equals($url)        Check if the current URL equals the given parameter.
+ * @method bool contains($string)   Check if the current URL contains the given parameter.
  */
-function route(string $path): string
+class Route
 {
-    return rtrim(APP_URL, '/') . '/' . ltrim($path, '/');
+    /**
+     * Build a full URL from a given parameter.
+     *
+     * @param string $param
+     * @return string
+     */
+    public static function is($param)
+    {
+        return rtrim(APP_URL, '/') . '/' . ltrim($param, '/');
+    }
+
+    /**
+     * Get the full current URL.
+     *
+     * @return string
+     */
+    public static function current()
+    {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+        $url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        return $url;
+    }
+
+    /**
+     * Check if the current URL equals the given parameter.
+     *
+     * @param string $url Full URL
+     * @return bool
+     */
+    public static function equals($url)
+    {
+        return self::current() === $url;
+    }
+
+    /**
+     * Check if the current URL contains the given parameter.
+     *
+     * @param string $string
+     * @return bool
+     */
+    public static function contains($string)
+    {
+        return strpos(self::current(), $string) !== false;
+    }
 }
 
 

@@ -1,8 +1,8 @@
 <?php
 
 use SolidPHP\Section;
-use function SolidPHP\route;
 use SolidPHP\Debug;
+use SolidPHP\Route;
 ?>
 
 <!DOCTYPE html>
@@ -18,9 +18,9 @@ use SolidPHP\Debug;
     <div>
         <nav>
             <ul>
-                <li><a href="<?= route('/') ?>">Home</a></li>
-                <li><a href="<?= route('/person') ?>">Person</a></li>
-                <li><a href="<?= route('/contact') ?>">Contact</a></li>
+                <li><a href="<?= Route::is('/') ?>">Home</a></li>
+                <li><a href="<?= Route::is('/person') ?>">Person</a></li>
+                <li><a href="<?= Route::is('/contact') ?>">Contact</a></li>
             </ul>
         </nav>
 
