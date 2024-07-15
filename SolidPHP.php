@@ -3,7 +3,12 @@
 /**
  * SolidPHP
  * is The Most Lightweight and Efficient PHP Micro Framework
- * https://github.com/rizmulya/solidphp
+ * 
+ * @version 150724
+ * @author rizmulya
+ * @copyright Copyright 2024 SolidPHP, rizmulya.
+ * @license https://opensource.org/licenses/MIT
+ * @link https://github.com/rizmulya/solidphp
  */
 
 namespace SolidPHP;
@@ -15,17 +20,17 @@ use mysqli;
 /**
  * Perform simplified, secure, original MySQLi database operations with defined fields and data types.
  * 
+ * @method mixed table($tableName, array $fields)       Define the table for efficiency
+ * @method string setClause($tableName, $exclude = [])  Generate SET Clause based on defined table.
+ * @method string fields($tableName, $exclude = [])     Get fields name based on defined table.
  * @method mixed query($query)                          Original mysqli query()
  * @method mixed prepare($query)                        Original mysqli prepare()
  * @method mixed bind_param($tableName, ...$params)     Modied mysqli bind_param()
  * @method mixed execute()                              Original mysqli execute()
- * @method mixed close()                                Original mysqli $stmt close()
- * @method mixed shutdown()                             Original mysqli close() connection
  * @method mixed getStmt()                              Original mysqli $stmt
  * @method mixed get_result()                           Original mysqli get_result()
- * @method mixed table($tableName, array $fields)       Define the table for efficiency
- * @method string fields($tableName, $exclude = [])     Get fields name based on defined table.
- * @method string setClause($tableName, $exclude = [])  Generate SET Clause based on defined table.
+ * @method mixed close()                                Original mysqli $stmt close()
+ * @method mixed shutdown()                             Original mysqli close() connection
  */
 class DBMysql
 {
@@ -187,6 +192,10 @@ class DBMysql
 
 /**
  * React Vite Adaptor
+ * 
+ * @method mixed set($config = [])  Set the configuration variable
+ * @method mixed header()                 Generate the html header script
+ * @method mixed footer()                 Generate the html footer script
  */
 class Vite
 {
@@ -285,6 +294,11 @@ class Vite
 
 /**
  * Encryption for url safety
+ * 
+ * @method mixed encrypt($data)                                             Encrypt the given param
+ * @method mixed decrypt($data)                                             Decrypt the given param
+ * @method array encryptField(array $data, $column)                         Encrypt one field of the given array data
+ * @method array addEncryptedField(array $data, $sourceField, $newField)    Add an encrypted field to the given array data
  */
 class UrlCryptor
 {
@@ -300,12 +314,18 @@ class UrlCryptor
         $this->iv = substr($this->key, 16, 32);
     }
 
+    /**
+     * Encrypt the given param
+     */
     public function encrypt($data)
     {
         $encrypted = openssl_encrypt(strval($data), 'AES-256-CBC', $this->key, 0, $this->iv);
         return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($encrypted));
     }
 
+    /**
+     * Decrypt the given param
+     */
     public function decrypt($data)
     {
         $data = base64_decode(str_replace(['-', '_'], ['+', '/'], $data));
@@ -347,6 +367,15 @@ class UrlCryptor
 
 /**
  * JWT Token Engine
+ * 
+ * @method mixed setSecretKey($key)                         Set JWT Secret Key
+ * @method mixed generate(array $payload, $expiry = 86400)  Generate the JWT Token
+ * @method mixed decode($token)                             Decode JWT Token 
+ * @method mixed verify($token)                             Verify JWT Token
+ * @method mixed getUser()                                  Get verified user credentials
+ * @method mixed setCookie($token, $path = '/', $domain = '', $secure = true, $httpOnly = true)     Set cookie with the JWT Token
+ * @method mixed deleteCookie()                             remove JWT Token cookie
+ * @method string getToken()                                Get JWT Token from request header Authorization or Cookie
  */
 class JWT
 {
@@ -445,7 +474,7 @@ class JWT
     }
 
     /**
-     * Get verified user
+     * Get verified user credentials
      */
     public static function getUser()
     {
@@ -466,6 +495,8 @@ class JWT
 
 /**
  * Filter Engine
+ * 
+ * @method mixed out($param)  Filter the given $param to agains xss
  */
 class Filter
 {
@@ -481,6 +512,8 @@ class Filter
 
 /**
  * Debug Engine
+ * 
+ * @method mixed showResponseTime($endTime)     Show the response time in ms
  */
 class Debug
 {
@@ -504,6 +537,10 @@ class Debug
 
 /**
  * Flash Message Engine
+ * 
+ * @method mixed set($key, $message)    Set the flash message
+ * @method mixed has($key)              Check has the flash message
+ * @method mixed get($key)              Get the flash message
  */
 class Flash
 {
@@ -542,7 +579,7 @@ class Flash
 
 
     /**
-     * Check has flash message
+     * Check has the flash message
      * @return bool
      */
     public static function has($key)
@@ -555,6 +592,11 @@ class Flash
 
 /**
  * CSRF Token Engine
+ * 
+ * @method string generate()                Generate the CSRF Token
+ * @method string token($method = null)     Generate hidden-input CSRF token, and hidden-input the given method
+ * @method mixed getToken()                 Get the token
+ * @method mixed verify($req)               Verify the token is valid
  */
 class CSRF
 {
@@ -583,7 +625,7 @@ class CSRF
     }
 
     /**
-     * @return string hidden-input CSRF token, and hidden-input the given method
+     * @return string Generate hidden-input CSRF token, and hidden-input the given method
      */
     public static function token($method = null)
     {
@@ -623,6 +665,7 @@ class CSRF
 
 /**
  * Route Helper
+ * 
  * @method string is($param)        Build a full URL from a given parameter.
  * @method string current()         Get the full current URL.
  * @method bool equals($url)        Check if the current URL equals the given parameter.
@@ -678,8 +721,18 @@ class Route
 
 
 /**
- * PHPRouter (Router & Response class) by Mohd Rashid (modified).
+ * PHPRouter by Mohd Rashid (modified).
  * GitHub Repository: https://github.com/mohdrashid/PHPRouter
+ * 
+ * @method void get($path, ...$callback)        Add the given route to 'GET'
+ * @method void post($path, ...$callback)       Add the given route to 'POST'
+ * @method void put($path, ...$callback)        Add the given route to 'PUT'
+ * @method void patch($path, ...$callback)      Add the given route to 'PATCH'
+ * @method void delete($path, ...$callback)     Add the given route to 'DELETE'
+ * @method void any($path, ...$callback)        Add the given route to 'ANY'
+ * @method void rePath($regex, ...$callback)    Route to the given $regex path
+ * @method void error($path, ...$callback)      Error Handler to set handler to be called when no routes are found
+ * @method mixed start()                        Start the routing process
  */
 class Router
 {
@@ -691,6 +744,10 @@ class Router
     private $response;
     private $CharsAllowed = '[a-zA-Z0-9\_\-]+';
 
+    /**
+     * Default Constructor: Initalizing all variables
+     * @method __construct
+     */
     public function __construct()
     {
         $this->method = $_SERVER['REQUEST_METHOD'] ?? null;
@@ -710,6 +767,11 @@ class Router
         }
     }
 
+    /**
+     * Function to get headers related to HTTP,PHP_AUTH and REQUEST from $_SERVER
+     * @method getHTTPHeaders
+     * @return Array         returns an containing all information related to HTTP,PHP_AUTH and REQUEST from $_SERVER
+     */
     private function getHTTPHeaders()
     {
         return array_filter($_SERVER, function ($name) {
@@ -717,6 +779,12 @@ class Router
         }, ARRAY_FILTER_USE_KEY);
     }
 
+    /**
+     * Turns given path into regular expression for comparison in complex routing
+     * @method getRegexRepresentation
+     * @param  string                 $path Route
+     * @return string                       Turns route into a regex
+     */
     private function getRegexRepresentation($path)
     {
         if (preg_match('/[^-:\/_{}()a-zA-Z\d]/', $path)) return false;
@@ -727,40 +795,101 @@ class Router
         return "@^" . $path . "$@D";
     }
 
+    /**
+     * Add the given route to 'GET' array for lookup
+     * @method get
+     * @param  string   $path     Route
+     * @param  function $callback Function to be called when the current equates the provided route; The callback must take request array and response object as parameters
+     * @return void
+     */
     public function get($path, ...$callback)
     {
         $this->routes['GET'][$this->getRegexRepresentation($path)] = $callback;
     }
+    /**
+     * Add the given route to 'POST' array for lookup
+     * @method post
+     * @param  string   $path     Route
+     * @param  function $callback Function to be called when the current equates the provided route; The callback must take request array and response object as parameters
+     * @return void
+     */
     public function post($path, ...$callback)
     {
         $this->routes['POST'][$this->getRegexRepresentation($path)] = $callback;
     }
+    /**
+     * Add the given route to 'PUT' array for lookup
+     * @method put
+     * @param  string   $path     Route
+     * @param  function $callback Function to be called when the current equates the provided route; The callback must take request array and response object as parameters
+     * @return void
+     */
     public function put($path, ...$callback)
     {
         $this->routes['PUT'][$this->getRegexRepresentation($path)] = $callback;
     }
+    /**
+     * Add the given route to 'PATCH' array for lookup
+     * @method patch
+     * @param  string   $path     Route
+     * @param  function $callback Function to be called when the current equates the provided route; The callback must take request array and response object as parameters
+     * @return void
+     */
     public function patch($path, ...$callback)
     {
         $this->routes['PATCH'][$this->getRegexRepresentation($path)] = $callback;
     }
+    /**
+     * Add the given route to 'DELETE' array for lookup
+     * @method delete
+     * @param  string   $path     Route
+     * @param  function $callback Function to be called when the current equates the provided route; The callback must take request array and response object as parameters
+     * @return void
+     */
     public function delete($path, ...$callback)
     {
         $this->routes['DELETE'][$this->getRegexRepresentation($path)] = $callback;
     }
+    /**
+     * Add the given route to 'ANY' array for lookup. ANY can be any REQUEST_METHOD
+     * @method any
+     * @param  string   $path     Route
+     * @param  function $callback Function to be called when the current equates the provided route; The callback must take request array and response object as parameters
+     * @return void
+     */
     public function any($path, ...$callback)
     {
         $this->routes['ANY'][$this->getRegexRepresentation($path)] = $callback;
     }
+    /**
+     * Error Handler to set handler to be called when no routes are found
+     * @method error
+     * @param  function $function A callback function that takes request array and response object
+     * @return void
+     */
     public function error($function)
     {
         $this->errorFunction = $function;
     }
 
+    /**
+     * Route to the given $regex path
+     * @method rePath
+     * @param  string   $path     Route
+     * @param  function $callback Function to be called when the current equates the provided route; The callback must take request array and response object as parameters
+     * @return void
+     */
     public function rePath($regex, ...$callback)
     {
         $this->routes['RE'][$regex] = $callback;
     }
 
+    /**
+     * Function to get appropriate callback for the current PATH_INFO based on REQUEST_METHOD
+     * @method getCallback
+     * @param  string        $method REQUEST_METHOD as string
+     * @return function              The callback function
+     */
     private function getCallback($method)
     {
         if (!isset($this->routes[$method])) return null;
@@ -777,6 +906,11 @@ class Router
         return null;
     }
 
+    /**
+     * Starts the routing process by matching current PATH_INFO to avaialable routes in array $routes
+     * @method start
+     * @return function  Returns callback function of the appropriate route or returns callback function of the error handler
+     */
     public function start()
     {
         if (!APP_DEBUG) {
@@ -788,6 +922,9 @@ class Router
         if (isset($this->errorFunction)) return ($this->errorFunction)(new Exception("Path not found!", 404), $this->response);
     }
 
+    /**
+     * Wrap the app with middleware
+     */
     private function runMiddleware($callbacks)
     {
         $i = 0;
@@ -801,7 +938,17 @@ class Router
     }
 }
 
-
+/**
+ * PHPRouter by Mohd Rashid (modified).
+ * GitHub Repository: https://github.com/mohdrashid/PHPRouter
+ * 
+ * @method bool send($data, $status = null)     Send Plain Text response
+ * @method bool json($data, $status = null)     Send response as JSON
+ * @method int status($status)                  Return HTTP status only
+ * @method void redirect($path)                 Header location to the given $path
+ * @method void view($page, $data = [])         PHP page with Templating Engine
+ * @method mixed php($file, $status = null)     PHP single file
+ */
 class Response
 {
     /**
@@ -905,6 +1052,14 @@ class Response
 
 /**
  * Templating Engine
+ * 
+ * @method mixed yield($name)                   Yield the given section/part name
+ * @method mixed extends($layoutFile)           Extends the layout file
+ * @method mixed include($file, $data = [])     Include a php file with the given data
+ * @method mixed set($name, $content)           Define the section/part with the given param $content
+ * @method mixed start($name)                   Start one section/part of page
+ * @method mixed end($name)                     End one section/part of page
+ * @method mixed render($page, $data = [])      Render php page with the Templating Engine support
  */
 class Section
 {

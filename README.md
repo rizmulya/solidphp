@@ -19,6 +19,8 @@ SolidPHP is the most `lightweight` and `efficient` PHP Micro Framework.
 
 ## Docs & Features
 
+Basically, if you use VSCode, you can hover over the class or method declaration to show the details about the class it self.
+
 ### 1. API Handler
 
 ```php
